@@ -1,5 +1,5 @@
 import { Form } from 'antd';
-import React, { useRef } from 'react';
+import React from 'react';
 import FileUpload from './FileUpload';
 import { UPLOAD_TYPE } from './FileUpload/fileUtils';
 import 'antd/dist/antd.css';

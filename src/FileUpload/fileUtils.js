@@ -11,13 +11,13 @@ export const fileTypeEnum = {
   xls: '.xls,application/vnd.ms-excel',
   xlsx: '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   zip: '.zip,application/zip,application/x-zip-compressed',
-  rar: '.rar,application/rar,application/x-rar-compressed',
+  rar: '.rar,application/rar,application/x-rar,application/x-rar-compressed',
   xml: '.xml,text/xml, application/xml',
   xlw: '.xlw,application/vnd.ms-excel',
   xlt: '.xlt,application/vnd.ms-excel',
   txt: 'text/plain',
-  doc: '.doc,application/msword',
-  docx: '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  doc: '.doc,application/msword,application/wps-writer',
+  docx: '.docx,application/msword,application/wps-writer,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ppt: '.ppt,application/vnd.ms-powerpoint',
   pptx: '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation',
 };
@@ -35,13 +35,13 @@ export const fileBase64Enum = {
   xls: 'application/vnd.ms-excel',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   zip: 'application/zip,application/x-zip-compressed',
-  rar: 'application/rar,application/x-rar-compressed',
+  rar: 'application/rar,application/x-rar',
   xml: 'application/xml',
   xlw: 'application/vnd.ms-excel',
   xlt: 'application/vnd.ms-excel',
   txt: 'text/plain',
   doc: 'application/msword',
-  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  docx: 'application/msword,application/wps-writer',
   ppt: 'application/vnd.ms-powerpoint',
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 };
@@ -122,6 +122,8 @@ export function validateFileType(arr = [], file, suffix = true) {
   if (arr instanceof Array && arr.length === 0) {
     return true; // 不传不校验文件类型
   }
+  const names = file?.name?.split(".");
+	const fileSuffix = names?.length > 0 && names[names.length - 1];
   if (file.type) {
     if (suffix) {
       let values = [];
@@ -130,7 +132,7 @@ export function validateFileType(arr = [], file, suffix = true) {
         val = val.split(',');
         values = values.concat(val);
       });
-      return values.includes(file.type);
+      return values.includes(file.type) || arr.includes(fileSuffix);
     }
     return arr.includes(file.type);
   }
@@ -232,18 +234,11 @@ export function downloadFileByBase64(base64, fileName, suffix = true) {
  * @param {string} name
  * @param { ENUM } previewType PREVIEW_TYPE.DOWNLOAD.code / PREVIEW_TYPE.PREVIEW.code
  */
-export function previewFile(
-  url,
-  name,
-  previewType = PREVIEW_TYPE.DOWNLOAD.code
-) {
+export function previewFile(url, name, previewType = PREVIEW_TYPE.DOWNLOAD.code) {
   const names = name.split('.');
   const fileSuffix = names.length > 0 && names[names.length - 1];
   const previewTypes = ['pdf', 'jpg', 'jpeg', 'png'];
-  if (
-    previewType === PREVIEW_TYPE.PREVIEW.code &&
-    previewTypes.includes(fileSuffix)
-  ) {
+  if (previewType === PREVIEW_TYPE.PREVIEW.code && previewTypes.includes(fileSuffix)) {
     return window.open(url, '_blank');
   }
   return downloadFile(url, name);

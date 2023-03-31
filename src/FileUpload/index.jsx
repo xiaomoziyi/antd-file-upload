@@ -1,16 +1,11 @@
 /* eslint-disable no-param-reassign */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {
-  useState,
-  useEffect,
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-} from 'react';
+
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Upload, Button, message, Tooltip, Modal } from 'antd';
-import classNames from 'classnames';
 import ImgCrop from 'antd-img-crop';
 import { InboxOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import classNames from 'classnames';
 import {
   CROP_PROPS,
   getAcceptTypes,
@@ -57,7 +52,7 @@ const FileUpload = forwardRef(
       action = '/api/v1/file/upload', // 上传路径
       unZipAction = '/api/v1/file/upload', // 解压压缩包路径
       accept = ['jpg', 'jpeg', 'png', 'pdf'], // 支持文件类型,传空数组则不限制类型
-      limitSize = 2048,
+      limitSize = 20,
       tooltipTitle = '支持扩展名：.jpg .jpeg .png .pdf', // 上传类型提示
       suffix = true, // 是否使用文件类型后缀
       text = '点击上传',
@@ -77,7 +72,7 @@ const FileUpload = forwardRef(
         fileKey: 'fileKey',
       },
       reqFileMap = {
-        //文件请求数据映射
+        // 文件请求数据映射
         file: 'file',
         fileName: 'fileName',
       },
@@ -89,7 +84,7 @@ const FileUpload = forwardRef(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     const uploadRef = useRef();
     const [fileList, setFileList] = useState(value || []);
@@ -110,9 +105,7 @@ const FileUpload = forwardRef(
     const handleRemove = (file) => {
       const index = fileList.indexOf(file);
       const newFileList = fileList.slice();
-      const newFileKeysList = fileKeysList.filter(
-        (item) => item.uid !== file.uid
-      );
+      const newFileKeysList = fileKeysList.filter((item) => item.uid !== file.uid);
       newFileList.splice(index, 1);
       triggerChange(newFileKeysList);
       setFileList(newFileList);
@@ -132,7 +125,6 @@ const FileUpload = forwardRef(
         setFileKeysList(value);
         setFileList(value);
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     const beforeUploadImgLimit = (file, fList, limit = 5) => {
@@ -219,10 +211,7 @@ const FileUpload = forwardRef(
                   key: item?.[resFileMap.fileKey],
                   name: item?.[resFileMap.fileName],
                   uid: item?.uid || item?.[resFileMap.fileKey],
-                  url: getPreFileUrl(
-                    item?.[resFileMap.fileKey],
-                    previewPrefixAction
-                  ),
+                  url: getPreFileUrl(item?.[resFileMap.fileKey], previewPrefixAction),
                   status: 'done',
                   unZip: true,
                 });
@@ -286,14 +275,14 @@ const FileUpload = forwardRef(
         config.headers = {
           'content-type': 'application/json',
         };
-        payload[reqFileMap['file']] = await parseFileToBase64(file);
-        payload[reqFileMap['fileName']] = file.name;
+        payload[reqFileMap.file] = await parseFileToBase64(file);
+        payload[reqFileMap.fileName] = file.name;
         Object.keys(extraParams).forEach((key) => {
           payload[key] = extraParams[key];
         });
       }
-      fmData.append(reqFileMap['file'], file);
-      fmData.append(reqFileMap[reqFileMap['fileName']], file.name);
+      fmData.append(reqFileMap.file, file);
+      fmData.append(reqFileMap[reqFileMap.fileName], file.name);
       Object.keys(extraParams).forEach((key) => {
         fmData.append(key, extraParams[key]);
       });
@@ -316,6 +305,7 @@ const FileUpload = forwardRef(
         }
         return;
       }
+      // eslint-disable-next-line consistent-return
       return request(fileAction, {
         method: 'POST',
         processData: transferBlob,
@@ -341,7 +331,7 @@ const FileUpload = forwardRef(
     };
 
     const handleImgPreview = async (file) => {
-      let url = file.url;
+      let { url } = file;
       if (!url || url === LOCAL) {
         const base64 = await parseFileToBase64(file.originFileObj);
         url = getFileUrlByBase64(base64);
@@ -356,7 +346,7 @@ const FileUpload = forwardRef(
     const handleCancel = () => setPreviewVisible(false);
 
     const handleUploadPreview = async (file) => {
-      let url = file.url;
+      let { url } = file;
       if (!url || url === LOCAL) {
         const base64 = await parseFileToBase64(file.originFileObj);
         url = getFileUrlByBase64(base64);
@@ -371,8 +361,7 @@ const FileUpload = forwardRef(
       withCredentials: true,
       fileList,
       accept: getAcceptTypes(accept, suffix),
-      beforeUpload: (file, fList) =>
-        beforeUploadImgLimit(file, fList, limitSize),
+      beforeUpload: (file, fList) => beforeUploadImgLimit(file, fList, limitSize),
       onChange: handleChange,
       onRemove: handleRemove,
       disabled,
@@ -395,11 +384,7 @@ const FileUpload = forwardRef(
     }
 
     const ImgUpload = (
-      <Upload
-        listType="picture-card"
-        {...uploadProps}
-        onPreview={handleImgPreview}
-      >
+      <Upload listType="picture-card" {...uploadProps} onPreview={handleImgPreview}>
         {fileList.length >= fileLen || disabled ? null : (
           <div
             style={{
@@ -431,16 +416,12 @@ const FileUpload = forwardRef(
           )}
 
           <Modal
-            visible={previewVisible}
+            open={previewVisible}
             title={previewImg.title}
             footer={null}
             onCancel={handleCancel}
           >
-            <img
-              alt="预览图片"
-              style={{ width: '100%' }}
-              src={previewImg.image}
-            />
+            <img alt="预览图片" style={{ width: '100%' }} src={previewImg.image} />
           </Modal>
         </div>
       );
@@ -477,7 +458,7 @@ const FileUpload = forwardRef(
         </Upload>
       </div>
     );
-  }
+  },
 );
 
 export default FileUpload;
