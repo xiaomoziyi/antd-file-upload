@@ -93,6 +93,8 @@ const FileUpload = forwardRef(
     const [previewVisible, setPreviewVisible] = useState(false);
     const [previewImg, setPreviewImg] = useState({ title: '', image: '' });
 
+    const fileListRef = useRef(value || []);
+
     const triggerChange = (list) => {
       setFileKeysList(list);
       return onChange && onChange(list);
@@ -108,6 +110,7 @@ const FileUpload = forwardRef(
       const newFileKeysList = fileKeysList.filter((item) => item.uid !== file.uid);
       newFileList.splice(index, 1);
       triggerChange(newFileKeysList);
+      fileListRef.current = newFileList;
       setFileList(newFileList);
     };
 
@@ -115,6 +118,7 @@ const FileUpload = forwardRef(
       fileList,
       setFileList: (val) => {
         setFileKeysList(val);
+        fileListRef.current = val;
         setFileList(val);
       },
       onRemove: handleRemove,
@@ -123,6 +127,7 @@ const FileUpload = forwardRef(
     useEffect(() => {
       if (fileList.length === 0 && value instanceof Array && value.length > 0) {
         setFileKeysList(value);
+        fileListRef.current = value;
         setFileList(value);
       }
     }, [value]);
@@ -148,6 +153,7 @@ const FileUpload = forwardRef(
         }
         if (manual) {
           triggerChange([...fileList, file]);
+          fileListRef.current = [...fileList, file];
           setFileList([...fileList, file]);
           return false;
         }
@@ -165,6 +171,7 @@ const FileUpload = forwardRef(
       }
       if (manual) {
         triggerChange([...fileList, file]);
+        fileListRef.current = [...fileList, file];
         setFileList([...fileList, file]);
         return false;
       }
@@ -187,7 +194,16 @@ const FileUpload = forwardRef(
      * @param {*} info
      */
     const handleChange = (info) => {
-      const { file, fileList: infoFileList } = info;
+      const { file,  } = info;
+      let { fileList: infoFileList } = info;
+      if(fileListRef.current && fileListRef.current.length > 0) {
+        infoFileList = infoFileList.map((item,index) => {
+           if(item.uid === file.uid) {
+            return file;
+           }
+           return fileListRef.current[index] || item;
+        })
+      }
       let fList = [];
       if (fileLen === 1) {
         fList = infoFileList.slice(-1);
@@ -254,6 +270,7 @@ const FileUpload = forwardRef(
           });
         }
       });
+      fileListRef.current = fList;
       setFileList(fList);
       if (file && file.status === 'done') {
         triggerChange(fKeys);
